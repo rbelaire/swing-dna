@@ -25,7 +25,7 @@ const SECTION_COLORS = {
   'Power Source': '#c084fc',
 };
 
-export default function SwingDNAApp() {
+export default function SwingDNAApp({ onSignOut }) {
   const [view, setView] = useState(VIEWS.MASTER);
   const [activeCategory, setActiveCategory] = useState(DNA_CATEGORIES[0].id);
   const [reportData, setReportData] = useState(null);
@@ -75,6 +75,9 @@ export default function SwingDNAApp() {
           <div style={styles.sidebarLogo}>
             <p style={styles.logoMono}>Swing DNA</p>
             <p style={styles.logoSub}>Master Reference</p>
+            {onSignOut && (
+              <button onClick={onSignOut} style={styles.signOutBtn}>Sign out</button>
+            )}
           </div>
 
           {/* New Student CTA */}
@@ -346,6 +349,18 @@ const styles = {
     textAlign: 'left',
     padding: 0,
     fontFamily: 'inherit',
+  },
+  signOutBtn: {
+    marginTop: 12,
+    background: 'transparent',
+    border: '1px solid rgba(255,255,255,0.12)',
+    color: 'rgba(255,255,255,0.4)',
+    borderRadius: 2,
+    padding: '5px 10px',
+    fontSize: 10,
+    fontFamily: 'inherit',
+    cursor: 'pointer',
+    letterSpacing: '0.05em',
   },
   floatingBack: {
     position: 'fixed',

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from './AuthContext'
+import SwingDNAApp from './SwingDNAApp'
 import './App.css'
 
 function GoogleIcon() {
@@ -37,22 +38,8 @@ function NavBar({ onSignOut }) {
   )
 }
 
-function Dashboard({ user, onSignOut }) {
-  return (
-    <div className="app">
-      <NavBar onSignOut={onSignOut} />
-      <main className="dashboard">
-        <div className="dashboard-inner">
-          <h1 className="dashboard-title">Welcome back!</h1>
-          <p className="dashboard-sub">{user.email}</p>
-          <div className="dashboard-placeholder">
-            <p>Student data and swing analysis coming soon.</p>
-          </div>
-        </div>
-      </main>
-      <footer className="footer">&copy; 2026 <span>My Swing DNA</span> — All rights reserved</footer>
-    </div>
-  )
+function Dashboard({ onSignOut }) {
+  return <SwingDNAApp onSignOut={onSignOut} />
 }
 
 function SignInForm() {
