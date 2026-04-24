@@ -301,6 +301,61 @@
   border: 1px solid #bbf7d0;
 }
 
+/* ── Nav sign-out ── */
+.nav-signout {
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.nav-signout:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* ── Dashboard ── */
+.dashboard {
+  flex: 1;
+  background: var(--gray-100);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.dashboard-inner {
+  max-width: 800px;
+  width: 100%;
+}
+
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--blue-dark);
+  margin-bottom: 0.25rem;
+}
+
+.dashboard-sub {
+  color: var(--gray-500);
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-placeholder {
+  background: var(--white);
+  border: 2px dashed var(--gray-300);
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  color: var(--gray-500);
+}
+
 /* ── Footer bar ── */
 .footer {
   background: var(--blue-dark);

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from './AuthContext'
 import './App.css'
 
 function GoogleIcon() {
@@ -22,14 +23,61 @@ function SwingIcon() {
   )
 }
 
-export default function App() {
+function NavBar({ onSignOut }) {
+  return (
+    <nav className="nav">
+      <a className="nav-logo" href="#">
+        <div className="nav-logo-icon"><SwingIcon /></div>
+        <span className="nav-logo-text">My <span>Swing</span> DNA</span>
+      </a>
+      {onSignOut && (
+        <button className="nav-signout" onClick={onSignOut}>Sign out</button>
+      )}
+    </nav>
+  )
+}
+
+function Dashboard({ user, onSignOut }) {
+  return (
+    <div className="app">
+      <NavBar onSignOut={onSignOut} />
+      <main className="dashboard">
+        <div className="dashboard-inner">
+          <h1 className="dashboard-title">Welcome back!</h1>
+          <p className="dashboard-sub">{user.email}</p>
+          <div className="dashboard-placeholder">
+            <p>Student data and swing analysis coming soon.</p>
+          </div>
+        </div>
+      </main>
+      <footer className="footer">&copy; 2026 <span>My Swing DNA</span> — All rights reserved</footer>
+    </div>
+  )
+}
+
+function SignInForm() {
+  const { user, signIn, signUp, signOut } = useAuth()
+  const [mode, setMode] = useState('signin') // 'signin' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
 
-  function handleSubmit(e) {
+  if (user === undefined) {
+    return (
+      <div className="app">
+        <NavBar />
+        <main className="hero"><div className="hero-inner"><p style={{ color: 'white' }}>Loading…</p></div></main>
+      </div>
+    )
+  }
+
+  if (user) {
+    return <Dashboard user={user} onSignOut={() => signOut()} />
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!email || !password) {
       setMessage({ type: 'error', text: 'Please fill in all fields.' })
@@ -37,31 +85,30 @@ export default function App() {
     }
     setLoading(true)
     setMessage(null)
-    // Simulate async sign-in
-    setTimeout(() => {
+    try {
+      if (mode === 'signin') {
+        await signIn(email, password)
+      } else {
+        await signUp(email, password)
+        setMessage({ type: 'success', text: 'Account created! Check your email to confirm.' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
       setLoading(false)
-      setMessage({ type: 'success', text: `Welcome back! Signed in as ${email}` })
-    }, 1200)
+    }
   }
+
+  const isSignUp = mode === 'signup'
 
   return (
     <div className="app">
-      <nav className="nav">
-        <a className="nav-logo" href="#">
-          <div className="nav-logo-icon">
-            <SwingIcon />
-          </div>
-          <span className="nav-logo-text">My <span>Swing</span> DNA</span>
-        </a>
-      </nav>
-
+      <NavBar />
       <main className="hero">
         <div className="hero-inner">
           <div className="hero-copy">
             <p className="hero-eyebrow">Golf Performance Platform</p>
-            <h1 className="hero-title">
-              Unlock Your<br /><span>Swing DNA</span>
-            </h1>
+            <h1 className="hero-title">Unlock Your<br /><span>Swing DNA</span></h1>
             <p className="hero-subtitle">
               Analyze, track, and improve your golf swing with AI-powered insights
               tailored to your unique biomechanics.
@@ -69,13 +116,13 @@ export default function App() {
           </div>
 
           <div className="card">
-            <h2 className="card-title">Sign in</h2>
-            <p className="card-subtitle">Welcome back — let's get to work</p>
+            <h2 className="card-title">{isSignUp ? 'Create account' : 'Sign in'}</h2>
+            <p className="card-subtitle">
+              {isSignUp ? 'Start your swing journey' : 'Welcome back — let\'s get to work'}
+            </p>
 
             {message && (
-              <div className={`message message-${message.type}`}>
-                {message.text}
-              </div>
+              <div className={`message message-${message.type}`}>{message.text}</div>
             )}
 
             <form onSubmit={handleSubmit} noValidate>
@@ -101,45 +148,49 @@ export default function App() {
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 />
               </div>
 
-              <div className="form-row">
-                <label className="form-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={e => setRemember(e.target.checked)}
-                  />
-                  Remember me
-                </label>
-                <a href="#" className="forgot-link">Forgot password?</a>
-              </div>
+              {!isSignUp && (
+                <div className="form-row">
+                  <label className="form-checkbox">
+                    <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
+                    Remember me
+                  </label>
+                  <a href="#" className="forgot-link">Forgot password?</a>
+                </div>
+              )}
 
               <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? 'Signing in…' : 'Sign in'}
+                {loading ? (isSignUp ? 'Creating…' : 'Signing in…') : (isSignUp ? 'Create account' : 'Sign in')}
               </button>
             </form>
 
             <div className="divider">or</div>
 
-            <button type="button" className="btn-google" onClick={() => setMessage({ type: 'error', text: 'Google sign-in coming soon.' })}>
+            <button
+              type="button"
+              className="btn-google"
+              onClick={() => setMessage({ type: 'error', text: 'Google sign-in coming soon.' })}
+            >
               <GoogleIcon />
               Continue with Google
             </button>
 
             <div className="card-footer">
-              Don't have an account?{' '}
-              <a href="#">Create one free</a>
+              {isSignUp ? (
+                <>Already have an account? <a href="#" onClick={e => { e.preventDefault(); setMode('signin'); setMessage(null) }}>Sign in</a></>
+              ) : (
+                <>Don't have an account? <a href="#" onClick={e => { e.preventDefault(); setMode('signup'); setMessage(null) }}>Create one free</a></>
+              )}
             </div>
           </div>
         </div>
       </main>
-
-      <footer className="footer">
-        &copy; 2026 <span>My Swing DNA</span> — All rights reserved
-      </footer>
+      <footer className="footer">&copy; 2026 <span>My Swing DNA</span> — All rights reserved</footer>
     </div>
   )
 }
+
+export default SignInForm
