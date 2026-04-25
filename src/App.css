@@ -511,6 +511,50 @@
   gap: 1rem;
 }
 
+.pdf-export-card {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pdf-export-card h3 {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 1rem;
+}
+
+.pdf-export-card p {
+  margin: 0;
+  color: #94a3b8;
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
+.pdf-export-card label {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.pdf-export-card select {
+  background: rgba(15, 23, 42, 0.75);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 6px;
+  padding: 0.65rem 0.7rem;
+  font-size: 0.92rem;
+}
+
+.pdf-export-card select:focus {
+  outline: none;
+  border-color: rgba(29, 185, 84, 0.8);
+  box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.22);
+}
+
 .btn-pdf-download {
   background: #f97316;
   color: white;
