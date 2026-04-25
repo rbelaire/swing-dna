@@ -38,51 +38,29 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
   async function uploadVideos(submissionId) {
     const videoUrls = { dtl: [], faceOn: [] }
 
+    async function uploadOne(file, folder, index) {
+      const ext = file.name.includes('.') ? file.name.split('.').pop() : 'mp4'
+      const fileName = `${submissionId}/${folder}/swing-${index + 1}-${Date.now()}.${ext}`
+      const { data, error: uploadError } = await supabase.storage
+        .from('swing-videos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || 'video/mp4',
+        })
+      if (uploadError) throw uploadError
+      return data?.path || fileName
+    }
+
     try {
-      // Upload DTL videos
       for (let i = 0; i < videoFiles.dtl.length; i++) {
-        const file = videoFiles.dtl[i]
-        const fileName = `${submissionId}/dtl/swing-${i + 1}-${Date.now()}.mp4`
-
-        console.log('Uploading DTL video:', fileName)
-        const { data, error: uploadError } = await supabase.storage
-          .from('swing-videos')
-          .upload(fileName, file, { cacheControl: '3600', upsert: false })
-
-        if (uploadError) {
-          console.error('DTL upload error:', uploadError)
-          throw uploadError
-        }
-        console.log('DTL uploaded response:', data)
-        const path = data?.path || fileName
-        console.log('Using path:', path)
-        videoUrls.dtl.push(path)
+        videoUrls.dtl.push(await uploadOne(videoFiles.dtl[i], 'dtl', i))
       }
-
-      // Upload Face-On videos
       for (let i = 0; i < videoFiles.faceOn.length; i++) {
-        const file = videoFiles.faceOn[i]
-        const fileName = `${submissionId}/faceOn/swing-${i + 1}-${Date.now()}.mp4`
-
-        console.log('Uploading Face-On video:', fileName)
-        const { data, error: uploadError } = await supabase.storage
-          .from('swing-videos')
-          .upload(fileName, file, { cacheControl: '3600', upsert: false })
-
-        if (uploadError) {
-          console.error('Face-On upload error:', uploadError)
-          throw uploadError
-        }
-        console.log('Face-On uploaded response:', data)
-        const path = data?.path || fileName
-        console.log('Using path:', path)
-        videoUrls.faceOn.push(path)
+        videoUrls.faceOn.push(await uploadOne(videoFiles.faceOn[i], 'faceOn', i))
       }
-
-      console.log('Final videoUrls to save:', videoUrls)
       return videoUrls
     } catch (err) {
-      console.error('Video upload error:', err)
       throw new Error(`Video upload failed: ${err.message}`)
     }
   }
