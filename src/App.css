@@ -1535,6 +1535,13 @@
   color: #f97316;
 }
 
+.video-play-error {
+  font-size: 0.78rem;
+  color: #f87171;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
 .video-unavailable {
   display: flex;
   flex-direction: column;

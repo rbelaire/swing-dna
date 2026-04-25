@@ -414,6 +414,19 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
 }
 
 function VideoPlayer({ label, path, signedUrl }) {
+  const [videoError, setVideoError] = useState(null)
+
+  function handleVideoError(e) {
+    const code = e.target.error?.code
+    const messages = {
+      1: 'Playback aborted',
+      2: 'Network error — check CORS/storage settings',
+      3: 'Decoding error — file may be corrupted',
+      4: 'Format not supported by this browser',
+    }
+    setVideoError(messages[code] || `Video error (code ${code})`)
+  }
+
   return (
     <div className="video-item">
       <p className="video-label">{label}</p>
@@ -422,10 +435,14 @@ function VideoPlayer({ label, path, signedUrl }) {
           <video
             src={signedUrl}
             controls
-            preload="none"
+            preload="metadata"
             className="video-player"
+            onError={handleVideoError}
           />
-          <a href={signedUrl} download className="video-download-link">Download</a>
+          {videoError && <p className="video-play-error">{videoError}</p>}
+          <a href={signedUrl} target="_blank" rel="noopener noreferrer" className="video-download-link">
+            Open in new tab
+          </a>
         </>
       ) : (
         <div className="video-unavailable">
