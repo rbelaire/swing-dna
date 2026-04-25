@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 import SwingDNAApp from './SwingDNAApp'
+import LandingPage from './LandingPage'
 import './App.css'
 
 function GoogleIcon() {
@@ -24,10 +25,10 @@ function SwingIcon() {
   )
 }
 
-function NavBar({ onSignOut }) {
+function NavBar({ onSignOut, onHome }) {
   return (
     <nav className="nav">
-      <a className="nav-logo" href="#">
+      <a className="nav-logo" href="#" onClick={onHome ? e => { e.preventDefault(); onHome() } : undefined}>
         <div className="nav-logo-icon"><SwingIcon /></div>
         <span className="nav-logo-text">My <span>Swing</span> DNA</span>
       </a>
@@ -42,7 +43,7 @@ function Dashboard({ onSignOut }) {
   return <SwingDNAApp onSignOut={onSignOut} />
 }
 
-function SignInForm() {
+function SignInForm({ onBack }) {
   const { user, signIn, signUp, signOut } = useAuth()
   const [mode, setMode] = useState('signin') // 'signin' | 'signup'
   const [email, setEmail] = useState('')
@@ -63,6 +64,7 @@ function SignInForm() {
   if (user) {
     return <Dashboard user={user} onSignOut={() => signOut()} />
   }
+
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -90,7 +92,7 @@ function SignInForm() {
 
   return (
     <div className="app">
-      <NavBar />
+      <NavBar onHome={onBack} />
       <main className="hero">
         <div className="hero-inner">
           <div className="hero-copy">
@@ -180,4 +182,37 @@ function SignInForm() {
   )
 }
 
-export default SignInForm
+function AppRoot() {
+  const { user, signOut } = useAuth()
+  const [view, setView] = useState('landing')
+
+  useEffect(() => {
+    if (user === null) setView('landing')
+  }, [user])
+
+  if (user === undefined) {
+    return (
+      <div className="app">
+        <NavBar />
+        <main className="hero"><div className="hero-inner"><p style={{ color: 'white' }}>Loading…</p></div></main>
+      </div>
+    )
+  }
+
+  if (user) {
+    return <Dashboard user={user} onSignOut={() => signOut()} />
+  }
+
+  if (view === 'landing') {
+    return (
+      <LandingPage
+        onGetStarted={() => setView('auth')}
+        onSignIn={() => setView('auth')}
+      />
+    )
+  }
+
+  return <SignInForm onBack={() => setView('landing')} />
+}
+
+export default AppRoot
