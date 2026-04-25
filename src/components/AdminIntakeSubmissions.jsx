@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import ReviewIntake from './ReviewIntake'
 
 export default function AdminIntakeSubmissions() {
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [selectedSubmission, setSelectedSubmission] = useState(null)
 
   useEffect(() => {
     loadSubmissions()
@@ -87,6 +89,19 @@ export default function AdminIntakeSubmissions() {
     )
   }
 
+  if (selectedSubmission) {
+    return (
+      <ReviewIntake
+        submission={selectedSubmission}
+        onClose={() => setSelectedSubmission(null)}
+        onReportGenerated={() => {
+          setSelectedSubmission(null)
+          loadSubmissions()
+        }}
+      />
+    )
+  }
+
   return (
     <div className="admin-section">
       <h2>Recent Intake Submissions</h2>
@@ -141,7 +156,12 @@ export default function AdminIntakeSubmissions() {
                   </div>
                 </div>
 
-                <button className="btn-review">Review Details</button>
+                <button
+                  className="btn-review"
+                  onClick={() => setSelectedSubmission(submission)}
+                >
+                  Review Details
+                </button>
               </div>
             )
           })}
