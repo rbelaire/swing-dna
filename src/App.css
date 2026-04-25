@@ -1503,16 +1503,82 @@
 
 .video-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
 }
 
 .video-item {
-  background: rgba(249, 115, 22, 0.1);
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.25);
   border-radius: 6px;
   padding: 1rem;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.video-player {
+  width: 100%;
+  border-radius: 4px;
+  background: #000;
+  max-height: 220px;
+}
+
+.video-download-link {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  text-decoration: none;
+  text-align: right;
+}
+
+.video-download-link:hover {
+  color: #f97316;
+}
+
+.video-unavailable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #f87171;
+}
+
+.video-unavailable code {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  word-break: break-all;
+}
+
+.video-error-banner {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #fca5a5;
+}
+
+.no-videos-info {
+  padding: 1rem;
+}
+
+.no-videos-hint {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+.no-videos-hint code {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.8rem;
 }
 
 .video-label {

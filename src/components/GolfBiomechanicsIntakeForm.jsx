@@ -154,14 +154,16 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
         .from('golf_intake_forms')
         .update({ video_urls: videoUrls })
         .eq('id', submissionId)
+        .select()
 
       if (updateError) {
         console.error('Update error:', updateError)
         throw updateError
       }
 
-      console.log('Database update response:', updateData)
-      console.log('Successfully saved video URLs to database')
+      if (!updateData || updateData.length === 0) {
+        throw new Error('Video URLs could not be saved — database permission denied. Ask your administrator to run the RLS migration.')
+      }
       onSubmitSuccess()
     } catch (err) {
       setError(err.message)
