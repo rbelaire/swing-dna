@@ -1,30 +1,45 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../AuthContext'
+import { supabase } from '../supabaseClient'
 import GolfBiomechanicsIntakeForm from './GolfBiomechanicsIntakeForm'
+import StudentProfile from './StudentProfile'
 
 export default function StudentDashboard() {
   const { user } = useAuth()
-  const [formSubmitted, setFormSubmitted] = useState(false)
+  const [hasSubmission, setHasSubmission] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  if (formSubmitted) {
+  useEffect(() => {
+    checkForSubmission()
+  }, [user?.id])
+
+  async function checkForSubmission() {
+    try {
+      const { data, error } = await supabase
+        .from('golf_intake_forms')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+
+      if (error) throw error
+      setHasSubmission(!!data && data.length > 0)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
     return (
       <div className="student-dashboard">
         <div className="dashboard-container">
-          <div className="success-message">
-            <div className="success-icon">✓</div>
-            <h2>Intake Form Submitted!</h2>
-            <p>Thank you for completing your golf biomechanics intake form.</p>
-            <p>Your coach will review your information and videos and get back to you with your Swing DNA profile soon.</p>
-            <button
-              onClick={() => setFormSubmitted(false)}
-              className="btn-primary"
-            >
-              Submit Another Form
-            </button>
-          </div>
+          <p className="loading-text">Loading...</p>
         </div>
       </div>
     )
+  }
+
+  if (hasSubmission) {
+    return <StudentProfile />
   }
 
   return (
@@ -37,7 +52,7 @@ export default function StudentDashboard() {
 
         <GolfBiomechanicsIntakeForm
           studentEmail={user?.email}
-          onSubmitSuccess={() => setFormSubmitted(true)}
+          onSubmitSuccess={() => setHasSubmission(true)}
         />
       </div>
     </div>
