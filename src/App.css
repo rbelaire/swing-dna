@@ -1437,6 +1437,8 @@
   margin-top: 0.5rem;
 }
 
+/* ── Responsive ── */
+@media (max-width: 700px) {
   .profile-cards {
     grid-template-columns: 1fr;
   }
@@ -1668,10 +1670,7 @@
   .btn-submit {
     display: none !important;
   }
-}
 
-/* ── Responsive ── */
-@media (max-width: 700px) {
   .hero-inner {
     flex-direction: column;
     gap: 2rem;
