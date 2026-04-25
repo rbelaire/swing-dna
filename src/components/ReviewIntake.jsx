@@ -86,19 +86,39 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
     }
   }
 
-  async function handleStatusUpdate(newStatus) {
+  async function handleDeleteSubmission() {
+    if (!confirm('Are you sure you want to delete this submission? This cannot be undone.')) {
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
 
-      const { error: updateError } = await supabase
+      // Delete videos from storage
+      if (submission.video_urls) {
+        const allVideoPaths = [...(submission.video_urls.dtl || []), ...(submission.video_urls.faceOn || [])]
+
+        for (const path of allVideoPaths) {
+          try {
+            await supabase.storage.from('swing-videos').remove([path])
+          } catch (err) {
+            console.warn('Error deleting video:', err)
+          }
+        }
+      }
+
+      // Delete submission from database
+      const { error: deleteError } = await supabase
         .from('golf_intake_forms')
-        .update({ status: newStatus })
+        .delete()
         .eq('id', submission.id)
 
-      if (updateError) throw updateError
+      if (deleteError) throw deleteError
 
-      setStatus(newStatus)
+      // Close and refresh
+      onClose()
+      onReportGenerated()
     } catch (err) {
       setError(err.message)
     } finally {
@@ -293,16 +313,26 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
         </div>
 
         <div className="review-actions">
-          <button onClick={onClose} className="btn-secondary">
-            Close
-          </button>
           <button
-            onClick={handleGenerateReport}
-            className="btn-primary"
+            onClick={handleDeleteSubmission}
+            className="btn-danger"
             disabled={loading}
+            title="Delete this submission and all videos"
           >
-            {loading ? 'Generating...' : 'Generate Report'}
+            {loading ? 'Deleting...' : 'Delete Submission'}
           </button>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem' }}>
+            <button onClick={onClose} className="btn-secondary">
+              Close
+            </button>
+            <button
+              onClick={handleGenerateReport}
+              className="btn-primary"
+              disabled={loading}
+            >
+              {loading ? 'Generating...' : 'Generate Report'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
