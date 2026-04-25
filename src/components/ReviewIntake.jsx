@@ -9,17 +9,30 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
   const [status, setStatus] = useState(initialSubmission.status)
   const [submission, setSubmission] = useState(initialSubmission)
   const [signedUrls, setSignedUrls] = useState({ dtl: [], faceOn: [] })
+  const [signedUrlError, setSignedUrlError] = useState(null)
 
   async function fetchSignedUrls(videoUrls) {
     if (!videoUrls) return
+    const dtlPaths = videoUrls.dtl || []
+    const faceOnPaths = videoUrls.faceOn || []
+    if (dtlPaths.length === 0 && faceOnPaths.length === 0) return
+
     const signed = { dtl: [], faceOn: [] }
-    for (const path of (videoUrls.dtl || [])) {
-      const { data } = await supabase.storage.from('swing-videos').createSignedUrl(path, 3600)
+    let firstError = null
+
+    for (const path of dtlPaths) {
+      const { data, error } = await supabase.storage.from('swing-videos').createSignedUrl(path, 3600)
+      if (error && !firstError) firstError = error
       signed.dtl.push(data?.signedUrl || null)
     }
-    for (const path of (videoUrls.faceOn || [])) {
-      const { data } = await supabase.storage.from('swing-videos').createSignedUrl(path, 3600)
+    for (const path of faceOnPaths) {
+      const { data, error } = await supabase.storage.from('swing-videos').createSignedUrl(path, 3600)
+      if (error && !firstError) firstError = error
       signed.faceOn.push(data?.signedUrl || null)
+    }
+
+    if (firstError) {
+      setSignedUrlError(`Storage access error: ${firstError.message}. Run the 002_add_missing_rls_policies.sql migration in Supabase.`)
     }
     setSignedUrls(signed)
   }
@@ -295,58 +308,66 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
           </div>
         </div>
 
-        {submission.video_urls && Object.keys(submission.video_urls).length > 0 && (
-          <div className="videos-section">
-            <h4>Uploaded Videos</h4>
+        <div className="videos-section">
+          <h4>Uploaded Videos</h4>
 
-            {Array.isArray(submission.video_urls.dtl) && submission.video_urls.dtl.length > 0 && (
-              <div className="video-group">
-                <h5>Down-the-Line (DTL)</h5>
-                <div className="video-list">
-                  {submission.video_urls.dtl.map((path, idx) => (
-                    <div key={idx} className="video-item">
-                      <p className="video-label">Swing {idx + 1}</p>
-                      {signedUrls.dtl[idx] ? (
-                        <a href={signedUrls.dtl[idx]} target="_blank" rel="noopener noreferrer" className="video-link">
-                          View Video
-                        </a>
-                      ) : (
-                        <span className="video-link-unavailable">Link unavailable</span>
-                      )}
-                      <p className="video-path">{path.split('/').pop()}</p>
-                    </div>
-                  ))}
+          {signedUrlError && (
+            <div className="video-error-banner">{signedUrlError}</div>
+          )}
+
+          {(() => {
+            const hasDtl = Array.isArray(submission.video_urls?.dtl) && submission.video_urls.dtl.length > 0
+            const hasFaceOn = Array.isArray(submission.video_urls?.faceOn) && submission.video_urls.faceOn.length > 0
+
+            if (!hasDtl && !hasFaceOn) {
+              return (
+                <div className="no-videos-info">
+                  <p className="no-videos">No video paths saved for this submission.</p>
+                  <p className="no-videos-hint">
+                    If videos were uploaded, the <code>video_urls</code> column may be empty due to a missing RLS policy.
+                    Run <code>002_add_missing_rls_policies.sql</code> in Supabase, then ask the student to re-submit.
+                  </p>
                 </div>
-              </div>
-            )}
+              )
+            }
 
-            {Array.isArray(submission.video_urls.faceOn) && submission.video_urls.faceOn.length > 0 && (
-              <div className="video-group">
-                <h5>Face-On (FO)</h5>
-                <div className="video-list">
-                  {submission.video_urls.faceOn.map((path, idx) => (
-                    <div key={idx} className="video-item">
-                      <p className="video-label">Swing {idx + 1}</p>
-                      {signedUrls.faceOn[idx] ? (
-                        <a href={signedUrls.faceOn[idx]} target="_blank" rel="noopener noreferrer" className="video-link">
-                          View Video
-                        </a>
-                      ) : (
-                        <span className="video-link-unavailable">Link unavailable</span>
-                      )}
-                      <p className="video-path">{path.split('/').pop()}</p>
+            return (
+              <>
+                {hasDtl && (
+                  <div className="video-group">
+                    <h5>Down-the-Line (DTL)</h5>
+                    <div className="video-list">
+                      {submission.video_urls.dtl.map((path, idx) => (
+                        <VideoPlayer
+                          key={idx}
+                          label={`Swing ${idx + 1}`}
+                          path={path}
+                          signedUrl={signedUrls.dtl[idx]}
+                        />
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {(!Array.isArray(submission.video_urls.dtl) || submission.video_urls.dtl.length === 0) &&
-             (!Array.isArray(submission.video_urls.faceOn) || submission.video_urls.faceOn.length === 0) && (
-              <p className="no-videos">No videos uploaded yet</p>
-            )}
-          </div>
-        )}
+                {hasFaceOn && (
+                  <div className="video-group">
+                    <h5>Face-On (FO)</h5>
+                    <div className="video-list">
+                      {submission.video_urls.faceOn.map((path, idx) => (
+                        <VideoPlayer
+                          key={idx}
+                          label={`Swing ${idx + 1}`}
+                          path={path}
+                          signedUrl={signedUrls.faceOn[idx]}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )
+          })()}
+        </div>
 
         <div className="status-section">
           <h4>Status</h4>
@@ -388,6 +409,30 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function VideoPlayer({ label, path, signedUrl }) {
+  return (
+    <div className="video-item">
+      <p className="video-label">{label}</p>
+      {signedUrl ? (
+        <>
+          <video
+            src={signedUrl}
+            controls
+            preload="none"
+            className="video-player"
+          />
+          <a href={signedUrl} download className="video-download-link">Download</a>
+        </>
+      ) : (
+        <div className="video-unavailable">
+          <span>Video unavailable — storage access error</span>
+          <code className="video-path">{path}</code>
+        </div>
+      )}
     </div>
   )
 }
