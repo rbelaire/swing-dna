@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useAuth } from './AuthContext';
 import { DNA_CATEGORIES, getSections } from './data/swingDNA';
 import DNAPage from './components/DNAPage';
 import StudentBuilder from './components/StudentBuilder';
 import StudentReport from './components/StudentReport';
+import AdminPanel from './components/AdminPanel';
 
 // ─────────────────────────────────────────────
 // SwingDNA — Root App Component
@@ -16,6 +18,7 @@ const VIEWS = {
   MASTER: 'master',       // Full reference — all pages
   BUILDER: 'builder',     // Create a new student profile
   REPORT: 'report',       // View generated student report
+  ADMIN: 'admin',         // Admin panel
 };
 
 const SECTION_COLORS = {
@@ -26,6 +29,7 @@ const SECTION_COLORS = {
 };
 
 export default function SwingDNAApp({ onSignOut }) {
+  const { isAdmin } = useAuth();
   const [view, setView] = useState(VIEWS.MASTER);
   const [activeCategory, setActiveCategory] = useState(DNA_CATEGORIES[0].id);
   const [reportData, setReportData] = useState(null);
@@ -65,6 +69,20 @@ export default function SwingDNAApp({ onSignOut }) {
     );
   }
 
+  if (view === VIEWS.ADMIN) {
+    return (
+      <AppShell>
+        <AdminPanel />
+        <button
+          onClick={() => setView(VIEWS.MASTER)}
+          style={styles.floatingBack}
+        >
+          ← Back to Reference
+        </button>
+      </AppShell>
+    );
+  }
+
   // ── Master Reference View ──
   return (
     <AppShell>
@@ -88,6 +106,14 @@ export default function SwingDNAApp({ onSignOut }) {
             >
               + New Student Report
             </button>
+            {isAdmin && (
+              <button
+                style={{ ...styles.ctaBtn, ...styles.adminBtn }}
+                onClick={() => setView(VIEWS.ADMIN)}
+              >
+                Admin Panel
+              </button>
+            )}
           </div>
 
           {/* Nav */}
@@ -376,5 +402,11 @@ const styles = {
     cursor: 'pointer',
     backdropFilter: 'blur(8px)',
     zIndex: 50,
+  },
+  adminBtn: {
+    marginTop: 8,
+    background: 'rgba(99,102,241,0.1)',
+    borderColor: 'rgba(99,102,241,0.25)',
+    color: '#6366f1',
   },
 };

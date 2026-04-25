@@ -5,6 +5,7 @@ const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined) // undefined = loading
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     if (!isConfigured) {
@@ -14,14 +15,42 @@ export function AuthProvider({ children }) {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        checkAdminStatus(session.user.id)
+      }
     }).catch(() => setUser(null))
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        checkAdminStatus(session.user.id)
+      } else {
+        setIsAdmin(false)
+      }
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  async function checkAdminStatus(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', userId)
+        .single()
+
+      if (error) {
+        console.error('Error checking admin status:', error)
+        setIsAdmin(false)
+      } else {
+        setIsAdmin(data?.is_admin ?? false)
+      }
+    } catch (err) {
+      console.error('Error checking admin status:', err)
+      setIsAdmin(false)
+    }
+  }
 
   async function signIn(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -41,7 +70,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signUp, signOut, isAdmin }}>
       {children}
     </AuthContext.Provider>
   )
