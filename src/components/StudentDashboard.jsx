@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient'
 import GolfBiomechanicsIntakeForm from './GolfBiomechanicsIntakeForm'
 import StudentProfile from './StudentProfile'
 
-export default function StudentDashboard() {
+export default function StudentDashboard({ onSignOut }) {
   const { user } = useAuth()
   const [hasSubmission, setHasSubmission] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -31,6 +31,7 @@ export default function StudentDashboard() {
   if (loading) {
     return (
       <div className="student-dashboard">
+        <StudentNav onSignOut={onSignOut} />
         <div className="dashboard-container">
           <p className="loading-text">Loading...</p>
         </div>
@@ -39,11 +40,12 @@ export default function StudentDashboard() {
   }
 
   if (hasSubmission) {
-    return <StudentProfile />
+    return <StudentProfile onSignOut={onSignOut} />
   }
 
   return (
     <div className="student-dashboard">
+      <StudentNav onSignOut={onSignOut} />
       <div className="dashboard-container">
         <div className="dashboard-header">
           <h1>Golf Biomechanics Intake</h1>
@@ -55,6 +57,17 @@ export default function StudentDashboard() {
           onSubmitSuccess={() => setHasSubmission(true)}
         />
       </div>
+    </div>
+  )
+}
+
+function StudentNav({ onSignOut }) {
+  return (
+    <div className="student-nav">
+      <span className="student-nav-brand">My Swing DNA</span>
+      {onSignOut && (
+        <button className="student-nav-signout" onClick={onSignOut}>Sign out</button>
+      )}
     </div>
   )
 }

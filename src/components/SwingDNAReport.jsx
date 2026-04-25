@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function SwingDNAReport({ report, submission }) {
+export default function SwingDNAReport({ report, submission, onSignOut }) {
   const [copied, setCopied] = useState(false)
 
   function handleCopyReport() {
@@ -86,6 +86,12 @@ ${d.description}`).join('\n\n')}
 
   return (
     <div className="student-dashboard print-friendly">
+      {onSignOut && (
+        <div className="student-nav no-print">
+          <span className="student-nav-brand">My Swing DNA</span>
+          <button className="student-nav-signout" onClick={onSignOut}>Sign out</button>
+        </div>
+      )}
       <div className="dashboard-container report-container">
         <div className="report-header">
           <div className="report-title-block">
