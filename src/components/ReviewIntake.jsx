@@ -8,6 +8,21 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
   const [report, setReport] = useState(null)
   const [status, setStatus] = useState(initialSubmission.status)
   const [submission, setSubmission] = useState(initialSubmission)
+  const [signedUrls, setSignedUrls] = useState({ dtl: [], faceOn: [] })
+
+  async function fetchSignedUrls(videoUrls) {
+    if (!videoUrls) return
+    const signed = { dtl: [], faceOn: [] }
+    for (const path of (videoUrls.dtl || [])) {
+      const { data } = await supabase.storage.from('swing-videos').createSignedUrl(path, 3600)
+      signed.dtl.push(data?.signedUrl || null)
+    }
+    for (const path of (videoUrls.faceOn || [])) {
+      const { data } = await supabase.storage.from('swing-videos').createSignedUrl(path, 3600)
+      signed.faceOn.push(data?.signedUrl || null)
+    }
+    setSignedUrls(signed)
+  }
 
   // Fetch latest submission data to get video URLs
   useEffect(() => {
@@ -21,10 +36,9 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
 
         if (fetchError) throw fetchError
         if (data) {
-          console.log('Fetched submission data:', data)
-          console.log('Video URLs:', data.video_urls)
           setSubmission(data)
           setStatus(data.status)
+          await fetchSignedUrls(data.video_urls)
         }
       } catch (err) {
         console.error('Error fetching submission:', err)
@@ -33,6 +47,23 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
 
     fetchLatestSubmission()
   }, [initialSubmission.id])
+
+  async function handleStatusUpdate(newStatus) {
+    try {
+      setLoading(true)
+      setError(null)
+      const { error: updateError } = await supabase
+        .from('golf_intake_forms')
+        .update({ status: newStatus })
+        .eq('id', submission.id)
+      if (updateError) throw updateError
+      setStatus(newStatus)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleGenerateReport() {
     try {
@@ -264,13 +295,6 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
           </div>
         </div>
 
-        <div className="debug-info">
-          <details>
-            <summary>Video URLs Debug Info</summary>
-            <pre>{JSON.stringify(submission.video_urls, null, 2)}</pre>
-          </details>
-        </div>
-
         {submission.video_urls && Object.keys(submission.video_urls).length > 0 && (
           <div className="videos-section">
             <h4>Uploaded Videos</h4>
@@ -279,18 +303,19 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
               <div className="video-group">
                 <h5>Down-the-Line (DTL)</h5>
                 <div className="video-list">
-                  {submission.video_urls.dtl.map((url, idx) => {
-                    const fullUrl = url.startsWith('http') ? url : `${url}`
-                    return (
-                      <div key={idx} className="video-item">
-                        <p className="video-label">Swing {idx + 1}</p>
-                        <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="video-link">
+                  {submission.video_urls.dtl.map((path, idx) => (
+                    <div key={idx} className="video-item">
+                      <p className="video-label">Swing {idx + 1}</p>
+                      {signedUrls.dtl[idx] ? (
+                        <a href={signedUrls.dtl[idx]} target="_blank" rel="noopener noreferrer" className="video-link">
                           View Video
                         </a>
-                        <p className="video-path">{url.split('/').pop()}</p>
-                      </div>
-                    )
-                  })}
+                      ) : (
+                        <span className="video-link-unavailable">Link unavailable</span>
+                      )}
+                      <p className="video-path">{path.split('/').pop()}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -299,18 +324,19 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
               <div className="video-group">
                 <h5>Face-On (FO)</h5>
                 <div className="video-list">
-                  {submission.video_urls.faceOn.map((url, idx) => {
-                    const fullUrl = url.startsWith('http') ? url : `${url}`
-                    return (
-                      <div key={idx} className="video-item">
-                        <p className="video-label">Swing {idx + 1}</p>
-                        <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="video-link">
+                  {submission.video_urls.faceOn.map((path, idx) => (
+                    <div key={idx} className="video-item">
+                      <p className="video-label">Swing {idx + 1}</p>
+                      {signedUrls.faceOn[idx] ? (
+                        <a href={signedUrls.faceOn[idx]} target="_blank" rel="noopener noreferrer" className="video-link">
                           View Video
                         </a>
-                        <p className="video-path">{url.split('/').pop()}</p>
-                      </div>
-                    )
-                  })}
+                      ) : (
+                        <span className="video-link-unavailable">Link unavailable</span>
+                      )}
+                      <p className="video-path">{path.split('/').pop()}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
