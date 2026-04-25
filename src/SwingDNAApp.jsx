@@ -47,7 +47,7 @@ export default function SwingDNAApp({ onSignOut }) {
   if (!isAdmin) {
     return (
       <AppShell>
-        <StudentDashboard />
+        <StudentDashboard onSignOut={onSignOut} />
       </AppShell>
     );
   }

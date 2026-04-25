@@ -3,7 +3,18 @@ import { useAuth } from '../AuthContext'
 import { supabase } from '../supabaseClient'
 import SwingDNAReport from './SwingDNAReport'
 
-export default function StudentProfile() {
+function StudentNav({ onSignOut }) {
+  return (
+    <div className="student-nav">
+      <span className="student-nav-brand">My Swing DNA</span>
+      {onSignOut && (
+        <button className="student-nav-signout" onClick={onSignOut}>Sign out</button>
+      )}
+    </div>
+  )
+}
+
+export default function StudentProfile({ onSignOut }) {
   const { user } = useAuth()
   const [submission, setSubmission] = useState(null)
   const [report, setReport] = useState(null)
@@ -43,6 +54,7 @@ export default function StudentProfile() {
   if (loading) {
     return (
       <div className="student-dashboard">
+        <StudentNav onSignOut={onSignOut} />
         <div className="dashboard-container">
           <p className="loading-text">Loading your profile...</p>
         </div>
@@ -53,6 +65,7 @@ export default function StudentProfile() {
   if (error) {
     return (
       <div className="student-dashboard">
+        <StudentNav onSignOut={onSignOut} />
         <div className="dashboard-container">
           <p className="error-text">{error}</p>
         </div>
@@ -63,6 +76,7 @@ export default function StudentProfile() {
   if (!submission) {
     return (
       <div className="student-dashboard">
+        <StudentNav onSignOut={onSignOut} />
         <div className="dashboard-container">
           <div className="empty-profile">
             <h2>No Intake Form Found</h2>
@@ -74,11 +88,12 @@ export default function StudentProfile() {
   }
 
   if (report) {
-    return <SwingDNAReport report={report} submission={submission} />
+    return <SwingDNAReport report={report} submission={submission} onSignOut={onSignOut} />
   }
 
   return (
     <div className="student-dashboard">
+      <StudentNav onSignOut={onSignOut} />
       <div className="dashboard-container">
         <div className="profile-header">
           <h1>Your Swing DNA Profile</h1>
