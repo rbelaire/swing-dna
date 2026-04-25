@@ -1,12 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { generateReport } from '../utils/swingDNAClassifier'
 
-export default function ReviewIntake({ submission, onClose, onReportGenerated }) {
+export default function ReviewIntake({ submission: initialSubmission, onClose, onReportGenerated }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [report, setReport] = useState(null)
-  const [status, setStatus] = useState(submission.status)
+  const [status, setStatus] = useState(initialSubmission.status)
+  const [submission, setSubmission] = useState(initialSubmission)
+
+  // Fetch latest submission data to get video URLs
+  useEffect(() => {
+    async function fetchLatestSubmission() {
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('golf_intake_forms')
+          .select('*')
+          .eq('id', initialSubmission.id)
+          .single()
+
+        if (fetchError) throw fetchError
+        if (data) {
+          setSubmission(data)
+          setStatus(data.status)
+        }
+      } catch (err) {
+        console.error('Error fetching submission:', err)
+      }
+    }
+
+    fetchLatestSubmission()
+  }, [initialSubmission.id])
 
   async function handleGenerateReport() {
     try {
