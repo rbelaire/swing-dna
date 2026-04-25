@@ -114,12 +114,17 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
         .delete()
         .eq('id', submission.id)
 
-      if (deleteError) throw deleteError
+      if (deleteError) {
+        console.error('Delete error details:', deleteError)
+        throw new Error(`Failed to delete submission: ${deleteError.message}`)
+      }
 
+      alert('Submission deleted successfully!')
       // Close and refresh
       onClose()
       onReportGenerated()
     } catch (err) {
+      console.error('Delete error:', err)
       setError(err.message)
     } finally {
       setLoading(false)

@@ -52,6 +52,16 @@ CREATE POLICY "Admins can update submissions"
     )
   );
 
+-- Create RLS policy to allow admins to delete submissions
+CREATE POLICY "Admins can delete submissions"
+  ON public.golf_intake_forms FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid() AND profiles.is_admin = true
+    )
+  );
+
 -- Create trigger to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_golf_intake_forms_updated_at()
 RETURNS TRIGGER AS $$
