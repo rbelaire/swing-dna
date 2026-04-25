@@ -45,10 +45,17 @@ export default function ReviewIntake({ submission, onClose, onReportGenerated })
         })
         .eq('id', submission.id)
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('Update error:', updateError)
+        throw updateError
+      }
 
-      onReportGenerated()
+      // Wait a moment for the update to complete, then call callback
+      setTimeout(() => {
+        onReportGenerated()
+      }, 500)
     } catch (err) {
+      console.error('Save error:', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -199,9 +206,50 @@ export default function ReviewIntake({ submission, onClose, onReportGenerated })
               <h4>Videos</h4>
               <p>DTL: {submission.video_count?.dtl || 0} swings</p>
               <p>Face-On: {submission.video_count?.faceOn || 0} swings</p>
+              {submission.video_urls && (submission.video_urls.dtl?.length > 0 || submission.video_urls.faceOn?.length > 0) && (
+                <p className="video-ready">Videos uploaded</p>
+              )}
             </div>
           </div>
         </div>
+
+        {submission.video_urls && (submission.video_urls.dtl?.length > 0 || submission.video_urls.faceOn?.length > 0) && (
+          <div className="videos-section">
+            <h4>Uploaded Videos</h4>
+
+            {submission.video_urls.dtl && submission.video_urls.dtl.length > 0 && (
+              <div className="video-group">
+                <h5>Down-the-Line (DTL)</h5>
+                <div className="video-list">
+                  {submission.video_urls.dtl.map((url, idx) => (
+                    <div key={idx} className="video-item">
+                      <p className="video-label">Swing {idx + 1}</p>
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="video-link">
+                        View Video
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {submission.video_urls.faceOn && submission.video_urls.faceOn.length > 0 && (
+              <div className="video-group">
+                <h5>Face-On (FO)</h5>
+                <div className="video-list">
+                  {submission.video_urls.faceOn.map((url, idx) => (
+                    <div key={idx} className="video-item">
+                      <p className="video-label">Swing {idx + 1}</p>
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="video-link">
+                        View Video
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="status-section">
           <h4>Status</h4>

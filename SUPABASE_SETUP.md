@@ -92,26 +92,91 @@ RLS policies are set up to ensure:
 
 These policies are automatically created by the migration SQL.
 
-## Future Enhancements
+## Video Storage Setup
 
-### Video Storage
+Video uploads are now integrated. Follow these steps to enable:
 
-Currently, the form collects video file references but doesn't upload them. To add video uploads:
+### 1. Create Storage Bucket
 
-1. Create a Supabase Storage bucket called `swing-videos`
-2. Update `GolfBiomechanicsIntakeForm.jsx` to upload files to storage
-3. Store the file paths in the `measurements` JSONB field
+In your Supabase project dashboard:
 
-### Example Video Upload Code
+1. Go to **Storage** → **Buckets**
+2. Click **New Bucket**
+3. Name: `swing-videos`
+4. Set visibility to **Private** (RLS controlled)
+5. Click **Create Bucket**
 
-```javascript
-async function uploadVideo(file, submissionId, angle) {
-  const { data, error } = await supabase.storage
-    .from('swing-videos')
-    .upload(`${submissionId}/${angle}/${file.name}`, file)
-  
-  if (error) throw error
-  return data.path
+### 2. Set Up RLS Policies for Storage
+
+In the SQL Editor, run:
+
+```sql
+-- Allow students to upload their own videos
+CREATE POLICY "Students can upload videos for their submission"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'swing-videos' AND
+    auth.role() = 'authenticated'
+  );
+
+-- Allow students to read their own videos
+CREATE POLICY "Students can read their own videos"
+  ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'swing-videos' AND
+    auth.role() = 'authenticated'
+  );
+
+-- Allow admins to read all videos
+CREATE POLICY "Admins can read all videos"
+  ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'swing-videos' AND
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid() AND profiles.is_admin = true
+    )
+  );
+```
+
+### 3. Update Database Schema
+
+Run the migration that includes `video_urls` column:
+
+```bash
+supabase migration up
+```
+
+Or manually add the column if the migration has already been run:
+
+```sql
+ALTER TABLE golf_intake_forms
+ADD COLUMN video_urls JSONB DEFAULT '{}'::jsonb,
+ADD COLUMN swing_dna_report JSONB;
+```
+
+### Video Upload Flow
+
+1. Student fills form and selects video files (both DTL and Face-On)
+2. On form submit:
+   - Intake data is saved to database (gets submission ID)
+   - Videos are uploaded to `swing-videos/[submissionId]/[angle]/`
+   - Video URLs are stored in `video_urls` JSONB field
+3. Coach can review videos in ReviewIntake component
+4. Videos persist in Storage for future reference
+
+### Video URL Structure
+
+```json
+{
+  "dtl": [
+    "submissions/1234/dtl/swing-1-1234567890.mp4",
+    "submissions/1234/dtl/swing-2-1234567890.mp4"
+  ],
+  "faceOn": [
+    "submissions/1234/faceOn/swing-1-1234567890.mp4",
+    "submissions/1234/faceOn/swing-2-1234567890.mp4"
+  ]
 }
 ```
 

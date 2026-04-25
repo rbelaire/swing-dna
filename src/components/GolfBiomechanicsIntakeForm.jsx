@@ -35,6 +35,42 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
     }))
   }
 
+  async function uploadVideos(submissionId) {
+    const videoUrls = { dtl: [], faceOn: [] }
+
+    try {
+      // Upload DTL videos
+      for (let i = 0; i < videoFiles.dtl.length; i++) {
+        const file = videoFiles.dtl[i]
+        const fileName = `${submissionId}/dtl/swing-${i + 1}-${Date.now()}.mp4`
+
+        const { data, error: uploadError } = await supabase.storage
+          .from('swing-videos')
+          .upload(fileName, file, { cacheControl: '3600', upsert: false })
+
+        if (uploadError) throw uploadError
+        videoUrls.dtl.push(data.path)
+      }
+
+      // Upload Face-On videos
+      for (let i = 0; i < videoFiles.faceOn.length; i++) {
+        const file = videoFiles.faceOn[i]
+        const fileName = `${submissionId}/faceOn/swing-${i + 1}-${Date.now()}.mp4`
+
+        const { data, error: uploadError } = await supabase.storage
+          .from('swing-videos')
+          .upload(fileName, file, { cacheControl: '3600', upsert: false })
+
+        if (uploadError) throw uploadError
+        videoUrls.faceOn.push(data.path)
+      }
+
+      return videoUrls
+    } catch (err) {
+      throw new Error(`Video upload failed: ${err.message}`)
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
@@ -53,8 +89,8 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
         throw new Error('Please upload videos for both Down-the-Line and Face-On angles')
       }
 
-      // Store intake form data in Supabase
-      const { data, error: dbError } = await supabase
+      // Store intake form data in Supabase first
+      const { data: insertData, error: dbError } = await supabase
         .from('golf_intake_forms')
         .insert([
           {
@@ -79,11 +115,21 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
             submitted_at: new Date().toISOString(),
           }
         ])
+        .select()
 
       if (dbError) throw dbError
 
-      // TODO: Upload videos to Supabase Storage
-      // For now, we'll just track that they were selected
+      const submissionId = insertData[0].id
+
+      // Upload videos and update submission with video URLs
+      const videoUrls = await uploadVideos(submissionId)
+
+      const { error: updateError } = await supabase
+        .from('golf_intake_forms')
+        .update({ video_urls: videoUrls })
+        .eq('id', submissionId)
+
+      if (updateError) throw updateError
 
       onSubmitSuccess()
     } catch (err) {
