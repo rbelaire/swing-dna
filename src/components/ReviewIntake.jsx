@@ -264,40 +264,60 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
           </div>
         </div>
 
-        {submission.video_urls && (submission.video_urls.dtl?.length > 0 || submission.video_urls.faceOn?.length > 0) && (
+        <div className="debug-info">
+          <details>
+            <summary>Video URLs Debug Info</summary>
+            <pre>{JSON.stringify(submission.video_urls, null, 2)}</pre>
+          </details>
+        </div>
+
+        {submission.video_urls && Object.keys(submission.video_urls).length > 0 && (
           <div className="videos-section">
             <h4>Uploaded Videos</h4>
 
-            {submission.video_urls.dtl && submission.video_urls.dtl.length > 0 && (
+            {Array.isArray(submission.video_urls.dtl) && submission.video_urls.dtl.length > 0 && (
               <div className="video-group">
                 <h5>Down-the-Line (DTL)</h5>
                 <div className="video-list">
-                  {submission.video_urls.dtl.map((url, idx) => (
-                    <div key={idx} className="video-item">
-                      <p className="video-label">Swing {idx + 1}</p>
-                      <a href={url} target="_blank" rel="noopener noreferrer" className="video-link">
-                        View Video
-                      </a>
-                    </div>
-                  ))}
+                  {submission.video_urls.dtl.map((url, idx) => {
+                    const fullUrl = url.startsWith('http') ? url : `${url}`
+                    return (
+                      <div key={idx} className="video-item">
+                        <p className="video-label">Swing {idx + 1}</p>
+                        <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="video-link">
+                          View Video
+                        </a>
+                        <p className="video-path">{url.split('/').pop()}</p>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )}
 
-            {submission.video_urls.faceOn && submission.video_urls.faceOn.length > 0 && (
+            {Array.isArray(submission.video_urls.faceOn) && submission.video_urls.faceOn.length > 0 && (
               <div className="video-group">
                 <h5>Face-On (FO)</h5>
                 <div className="video-list">
-                  {submission.video_urls.faceOn.map((url, idx) => (
-                    <div key={idx} className="video-item">
-                      <p className="video-label">Swing {idx + 1}</p>
-                      <a href={url} target="_blank" rel="noopener noreferrer" className="video-link">
-                        View Video
-                      </a>
-                    </div>
-                  ))}
+                  {submission.video_urls.faceOn.map((url, idx) => {
+                    const fullUrl = url.startsWith('http') ? url : `${url}`
+                    return (
+                      <div key={idx} className="video-item">
+                        <p className="video-label">Swing {idx + 1}</p>
+                        <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="video-link">
+                          View Video
+                        </a>
+                        <p className="video-path">{url.split('/').pop()}</p>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
+            )}
+
+            {(!Array.isArray(submission.video_urls.dtl) || submission.video_urls.dtl.length === 0) &&
+             (!Array.isArray(submission.video_urls.faceOn) || submission.video_urls.faceOn.length === 0) && (
+              <p className="no-videos">No videos uploaded yet</p>
             )}
           </div>
         )}
