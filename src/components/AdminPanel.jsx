@@ -3,6 +3,7 @@ import AdminUserCreation from './AdminUserCreation'
 import AdminStudentList from './AdminStudentList'
 import GolfBiomechanicsPDF from './GolfBiomechanicsPDF'
 import AdminIntakeSubmissions from './AdminIntakeSubmissions'
+import SwingDNAPDFExport from './SwingDNAPDFExport'
 
 export default function AdminPanel() {
   const [refreshKey, setRefreshKey] = useState(0)
@@ -21,6 +22,7 @@ export default function AdminPanel() {
             <h2>Resources</h2>
             <div className="admin-resources">
               <GolfBiomechanicsPDF />
+              <SwingDNAPDFExport />
             </div>
           </section>
 
