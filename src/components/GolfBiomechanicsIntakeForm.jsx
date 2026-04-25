@@ -44,11 +44,16 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
         const file = videoFiles.dtl[i]
         const fileName = `${submissionId}/dtl/swing-${i + 1}-${Date.now()}.mp4`
 
+        console.log('Uploading DTL video:', fileName)
         const { data, error: uploadError } = await supabase.storage
           .from('swing-videos')
           .upload(fileName, file, { cacheControl: '3600', upsert: false })
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('DTL upload error:', uploadError)
+          throw uploadError
+        }
+        console.log('DTL uploaded:', data)
         videoUrls.dtl.push(data.path)
       }
 
@@ -57,16 +62,23 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
         const file = videoFiles.faceOn[i]
         const fileName = `${submissionId}/faceOn/swing-${i + 1}-${Date.now()}.mp4`
 
+        console.log('Uploading Face-On video:', fileName)
         const { data, error: uploadError } = await supabase.storage
           .from('swing-videos')
           .upload(fileName, file, { cacheControl: '3600', upsert: false })
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('Face-On upload error:', uploadError)
+          throw uploadError
+        }
+        console.log('Face-On uploaded:', data)
         videoUrls.faceOn.push(data.path)
       }
 
+      console.log('Final videoUrls:', videoUrls)
       return videoUrls
     } catch (err) {
+      console.error('Video upload error:', err)
       throw new Error(`Video upload failed: ${err.message}`)
     }
   }
@@ -122,15 +134,21 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
       const submissionId = insertData[0].id
 
       // Upload videos and update submission with video URLs
+      console.log('Starting video upload for submission:', submissionId)
       const videoUrls = await uploadVideos(submissionId)
+      console.log('Videos uploaded, updating database with:', videoUrls)
 
       const { error: updateError } = await supabase
         .from('golf_intake_forms')
         .update({ video_urls: videoUrls })
         .eq('id', submissionId)
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('Update error:', updateError)
+        throw updateError
+      }
 
+      console.log('Successfully saved video URLs to database')
       onSubmitSuccess()
     } catch (err) {
       setError(err.message)

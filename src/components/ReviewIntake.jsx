@@ -21,6 +21,8 @@ export default function ReviewIntake({ submission: initialSubmission, onClose, o
 
         if (fetchError) throw fetchError
         if (data) {
+          console.log('Fetched submission data:', data)
+          console.log('Video URLs:', data.video_urls)
           setSubmission(data)
           setStatus(data.status)
         }
