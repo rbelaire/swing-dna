@@ -53,8 +53,10 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
           console.error('DTL upload error:', uploadError)
           throw uploadError
         }
-        console.log('DTL uploaded:', data)
-        videoUrls.dtl.push(data.path)
+        console.log('DTL uploaded response:', data)
+        const path = data?.path || fileName
+        console.log('Using path:', path)
+        videoUrls.dtl.push(path)
       }
 
       // Upload Face-On videos
@@ -71,11 +73,13 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
           console.error('Face-On upload error:', uploadError)
           throw uploadError
         }
-        console.log('Face-On uploaded:', data)
-        videoUrls.faceOn.push(data.path)
+        console.log('Face-On uploaded response:', data)
+        const path = data?.path || fileName
+        console.log('Using path:', path)
+        videoUrls.faceOn.push(path)
       }
 
-      console.log('Final videoUrls:', videoUrls)
+      console.log('Final videoUrls to save:', videoUrls)
       return videoUrls
     } catch (err) {
       console.error('Video upload error:', err)
@@ -138,7 +142,15 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
       const videoUrls = await uploadVideos(submissionId)
       console.log('Videos uploaded, updating database with:', videoUrls)
 
-      const { error: updateError } = await supabase
+      // Verify videoUrls is not empty
+      const hasVideos = (videoUrls.dtl && videoUrls.dtl.length > 0) || (videoUrls.faceOn && videoUrls.faceOn.length > 0)
+      console.log('Has videos to save:', hasVideos, videoUrls)
+
+      if (!hasVideos) {
+        throw new Error('No video URLs were returned from upload')
+      }
+
+      const { data: updateData, error: updateError } = await supabase
         .from('golf_intake_forms')
         .update({ video_urls: videoUrls })
         .eq('id', submissionId)
@@ -148,6 +160,7 @@ export default function GolfBiomechanicsIntakeForm({ onSubmitSuccess }) {
         throw updateError
       }
 
+      console.log('Database update response:', updateData)
       console.log('Successfully saved video URLs to database')
       onSubmitSuccess()
     } catch (err) {
