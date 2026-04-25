@@ -2,6 +2,7 @@ import { useState } from 'react'
 import AdminUserCreation from './AdminUserCreation'
 import AdminStudentList from './AdminStudentList'
 import GolfBiomechanicsPDF from './GolfBiomechanicsPDF'
+import AdminIntakeSubmissions from './AdminIntakeSubmissions'
 
 export default function AdminPanel() {
   const [refreshKey, setRefreshKey] = useState(0)
@@ -26,6 +27,10 @@ export default function AdminPanel() {
           <section className="admin-section">
             <AdminUserCreation onAdminCreated={handleAdminCreated} />
           </section>
+        </div>
+
+        <div style={{ marginTop: '2rem' }}>
+          <AdminIntakeSubmissions />
         </div>
 
         <section className="admin-section" style={{ marginTop: '2rem' }}>

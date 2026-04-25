@@ -5,6 +5,7 @@ import DNAPage from './components/DNAPage';
 import StudentBuilder from './components/StudentBuilder';
 import StudentReport from './components/StudentReport';
 import AdminPanel from './components/AdminPanel';
+import StudentDashboard from './components/StudentDashboard';
 
 // ─────────────────────────────────────────────
 // SwingDNA — Root App Component
@@ -40,6 +41,15 @@ export default function SwingDNAApp({ onSignOut }) {
   function handleGenerateReport(data) {
     setReportData(data);
     setView(VIEWS.REPORT);
+  }
+
+  // ── Student view (non-admin users see intake form) ──
+  if (!isAdmin) {
+    return (
+      <AppShell>
+        <StudentDashboard />
+      </AppShell>
+    );
   }
 
   // ── Full screen views ──
