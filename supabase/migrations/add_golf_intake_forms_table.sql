@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS public.golf_intake_forms (
   measurements JSONB NOT NULL DEFAULT '{}'::jsonb,
   movement_tests JSONB NOT NULL DEFAULT '{}'::jsonb,
   video_count JSONB NOT NULL DEFAULT '{}'::jsonb,
+  video_urls JSONB DEFAULT '{}'::jsonb,
+  swing_dna_report JSONB,
   status TEXT NOT NULL DEFAULT 'pending_review',
   submitted_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
