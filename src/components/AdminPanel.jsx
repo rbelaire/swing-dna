@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AdminUserCreation from './AdminUserCreation'
 import AdminStudentList from './AdminStudentList'
+import GolfBiomechanicsPDF from './GolfBiomechanicsPDF'
 
 export default function AdminPanel() {
   const [refreshKey, setRefreshKey] = useState(0)
@@ -16,13 +17,20 @@ export default function AdminPanel() {
 
         <div className="admin-grid">
           <section className="admin-section">
-            <AdminUserCreation onAdminCreated={handleAdminCreated} />
+            <h2>Resources</h2>
+            <div className="admin-resources">
+              <GolfBiomechanicsPDF />
+            </div>
           </section>
 
           <section className="admin-section">
-            <AdminStudentList key={refreshKey} />
+            <AdminUserCreation onAdminCreated={handleAdminCreated} />
           </section>
         </div>
+
+        <section className="admin-section" style={{ marginTop: '2rem' }}>
+          <AdminStudentList key={refreshKey} />
+        </section>
       </div>
     </div>
   )
