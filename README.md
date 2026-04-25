@@ -132,7 +132,21 @@ Or connect to your existing backend/database by replacing the
 
 ---
 
-## 7. Customization
+## 7. Deployment Notes
+
+This project now defaults to `base: '/'` in Vite so deployments to Netlify/Vercel/Render work without asset path issues.
+
+If you deploy to a subpath (for example GitHub Pages project sites), set:
+
+```bash
+VITE_BASE_PATH=/swing-dna/
+```
+
+If the app shows a blank page after deploy, inspect the browser network tab for 404s on `/assets/*` or `/swing-dna/assets/*`; a mismatched base path is the usual cause.
+
+---
+
+## 8. Customization
 
 **Colors** — edit the COLORS object in `DNAPage.jsx`:
 ```js
