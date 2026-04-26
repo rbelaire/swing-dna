@@ -205,8 +205,8 @@ function Hero({ onGetStarted, onSignIn }) {
           </h1>
           <p className="lp-hero-sub">
             My Swing DNA maps your unique biomechanics across 6 physical and motion
-            categories — giving coaches and students a precise blueprint for
-            improvement.
+            categories — giving every golfer a precise blueprint for improvement.
+            No coach required.
           </p>
           <div className="lp-hero-actions">
             <button className="lp-btn-primary" onClick={onGetStarted}>
@@ -214,7 +214,7 @@ function Hero({ onGetStarted, onSignIn }) {
             </button>
             <button className="lp-btn-outline" onClick={onSignIn}>Sign In</button>
           </div>
-          <p className="lp-hero-note">No credit card required &bull; Takes 15 minutes</p>
+          <p className="lp-hero-note">Simple one-time access &bull; Takes 15 minutes</p>
         </div>
 
         <div className="lp-hero-visual">
@@ -240,7 +240,7 @@ function Hero({ onGetStarted, onSignIn }) {
 function TrustStrip() {
   const pillars = [
     { label: 'Biomechanics-Based', icon: <IconRuler /> },
-    { label: 'Coach + Student Portal', icon: <IconUsers /> },
+    { label: 'Self-Service or with a Coach', icon: <IconUsers /> },
     { label: 'Video Analysis', icon: <IconVideo /> },
     { label: 'Personalized Reports', icon: <IconFileText /> },
     { label: 'Track Progress Over Time', icon: <IconTrendingUp /> },
@@ -445,11 +445,11 @@ function AudienceSplit({ onGetStarted }) {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <h3 className="lp-audience-title">For Students</h3>
+          <h3 className="lp-audience-title">For Golfers</h3>
           <p className="lp-audience-desc">
-            Stop guessing why your swing breaks down. Get a report built
-            around your body — not a textbook ideal — and practice drills
-            that match your unique DNA.
+            Stop guessing why your swing breaks down. Sign up, pay once, and
+            get a report built entirely around your body — no coach needed,
+            no referral required.
           </p>
           <ul className="lp-audience-list">
             {['Submit measurements & videos in minutes', 'Receive your personalized Swing DNA', 'Understand your one-line feel cue', 'See your most likely miss patterns', 'Follow a targeted practice plan'].map(item => (
@@ -457,7 +457,7 @@ function AudienceSplit({ onGetStarted }) {
             ))}
           </ul>
           <button className="lp-audience-btn lp-audience-btn--student" onClick={onGetStarted}>
-            Start as a Student <IconArrowRight />
+            Get My Swing DNA <IconArrowRight />
           </button>
         </div>
       </div>
@@ -482,11 +482,11 @@ function CTABanner({ onGetStarted }) {
             <span className="lp-gradient-text">your Swing DNA?</span>
           </h2>
           <p className="lp-cta-sub">
-            Join coaches and students already using biomechanics-driven
-            analysis to transform the way they practice and teach.
+            Any golfer can access their Swing DNA directly — no coach, no
+            referral. Sign up, pay once, and get your personalized blueprint.
           </p>
           <button className="lp-btn-primary lp-btn-primary--lg" onClick={onGetStarted}>
-            Get Started Free <IconArrowRight />
+            Get Started <IconArrowRight />
           </button>
         </div>
       </div>
